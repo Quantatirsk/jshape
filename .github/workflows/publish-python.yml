@@ -36,7 +36,7 @@ jobs:
         run: maturin build --release --manifest-path bindings/python/Cargo.toml --out bindings/python/dist
 
       - name: Upload wheel artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: python-wheel-${{ matrix.os }}
           path: bindings/python/dist/*
@@ -63,7 +63,7 @@ jobs:
         run: maturin sdist --manifest-path bindings/python/Cargo.toml --out bindings/python/dist
 
       - name: Upload source distribution
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: python-sdist
           path: bindings/python/dist/*
@@ -78,7 +78,7 @@ jobs:
     environment: pypi
     steps:
       - name: Download distributions
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: dist
           pattern: python-*
@@ -88,4 +88,5 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           attestations: false
+          skip-existing: true
           verbose: true
