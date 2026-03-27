@@ -5,7 +5,12 @@ build-backend = "maturin"
 [project]
 name = "jshape"
 requires-python = ">=3.8"
-dynamic = ["version", "description", "readme", "urls", "license", "keywords"]
+description = "Repair malformed JSON and render a stable, human-readable structural outline."
+readme = "README.md"
+license = "MIT"
+keywords = ["json", "schema", "shape", "repair", "python"]
+urls = { Homepage = "https://github.com/Quantatirsk/jshape", Repository = "https://github.com/Quantatirsk/jshape" }
+dynamic = ["version"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
