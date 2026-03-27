@@ -85,235 +85,149 @@ If you need lower-level access, the crate also exposes:
 
 ## Example
 
-Input from a large production-style export. In practice this kind of payload can easily be tens of thousands of lines long; the sample below is already long enough to show why reading the raw JSON directly is painful:
+The painful case is usually not a tiny nested object. It is a giant export where one array contains thousands of items with almost the same structure, making the raw JSON long and hard to scan.
+
+Below is a trimmed excerpt from a much larger analytics export. In the real file, the `events` array contains tens of thousands of similarly shaped records:
 
 ```text
 {
   "export_id": "exp_2026_03_27_001",
   "generated_at": "2026-03-27T03:14:15Z",
-  "tenant": {
-    "id": "tenant_42",
-    "name": "Acme Global",
-    "plan": "enterprise",
-    "regions": ["us-east-1", "eu-west-1", "ap-southeast-1"],
-    "feature_flags": [
-      "audit-trail",
-      "advanced-billing",
-      "fine-grained-rbac",
-      "sso",
-      "warehouse-sync"
-    ]
-  },
-  "users": [
+  "tenant_id": "tenant_42",
+  "events": [
     {
-      "id": "usr_001",
-      "profile": {
-        "email": "ada@acme.example",
-        "display_name": "Ada Lovelace",
-        "title": "Principal Engineer",
-        "team": "Platform",
-        "locale": "en-US",
-        "timezone": "America/Los_Angeles",
-        "phones": ["+1-415-555-0101", "+1-415-555-0102"]
+      "event_id": "evt_000001",
+      "session_id": "sess_a1",
+      "user_id": "usr_1001",
+      "event_type": "page_view",
+      "source": "web",
+      "timestamp": "2026-03-27T03:00:01Z",
+      "request": {
+        "method": "GET",
+        "path": "/dashboard",
+        "status": 200,
+        "duration_ms": 42
       },
-      "roles": ["admin", "billing", "support"],
-      "projects": [
-        {
-          "project_id": "prj_alpha",
-          "name": "Alpha",
-          "status": "active",
-          "environments": ["dev", "staging", "prod"],
-          "budgets": {
-            "monthly_limit": 20000,
-            "currency": "USD"
-          }
-        },
-        {
-          "project_id": "prj_beta",
-          "name": "Beta",
-          "status": "paused",
-          "environments": ["dev", "prod"],
-          "budgets": {
-            "monthly_limit": 5000,
-            "currency": "USD"
-          }
-        }
-      ],
-      "devices": [
-        {
-          "device_id": "dev_mac_01",
-          "type": "laptop",
-          "os": "macOS",
-          "last_seen_at": "2026-03-27T02:58:10Z",
-          "ip_addresses": ["203.0.113.10", "203.0.113.11"]
-        },
-        {
-          "device_id": "dev_phone_01",
-          "type": "phone",
-          "os": "iOS",
-          "last_seen_at": "2026-03-26T23:41:05Z",
-          "ip_addresses": ["198.51.100.7"]
-        }
-      ],
-      "activity": [
-        {
-          "event_id": "evt_9001",
-          "kind": "login",
-          "status": "success",
-          "source": "web",
-          "context": {
-            "ip": "203.0.113.10",
-            "country": "US",
-            "mfa": true
-          }
-        },
-        {
-          "event_id": "evt_9002",
-          "kind": "export_csv",
-          "status": "success",
-          "source": "api",
-          "context": {
-            "ip": "203.0.113.11",
-            "country": "US",
-            "mfa": true
-          }
-        }
-      ],
-      "billing": {
-        "cost_center": "ENG-PLATFORM",
-        "invoice_email": "ops@acme.example",
-        "active_subscriptions": ["analytics", "support-plus", "warehouse-sync"]
+      "device": {
+        "os": "macOS",
+        "browser": "Chrome",
+        "locale": "en-US"
       },
-      "security": {
-        "mfa_enabled": true,
-        "password_last_rotated_at": "2026-02-18T11:20:00Z",
-        "recovery_codes_remaining": 8
+      "geo": {
+        "country": "US",
+        "region": "CA",
+        "city": "San Francisco"
+      },
+      "metrics": {
+        "cpu_ms": 12,
+        "db_rows": 18,
+        "cache_hit": true
+      },
+      "tags": ["prod", "dashboard", "page_view"]
+    },
+    {
+      "event_id": "evt_000002",
+      "session_id": "sess_a1",
+      "user_id": "usr_1001",
+      "event_type": "page_view",
+      "source": "web",
+      "timestamp": "2026-03-27T03:00:03Z",
+      "request": {
+        "method": "GET",
+        "path": "/dashboard/usage",
+        "status": 200,
+        "duration_ms": 57
+      },
+      "device": {
+        "os": "macOS",
+        "browser": "Chrome",
+        "locale": "en-US"
+      },
+      "geo": {
+        "country": "US",
+        "region": "CA",
+        "city": "San Francisco"
+      },
+      "metrics": {
+        "cpu_ms": 19,
+        "db_rows": 44,
+        "cache_hit": true
+      },
+      "tags": ["prod", "dashboard", "page_view"]
+    },
+    {
+      "event_id": "evt_000003",
+      "session_id": "sess_b9",
+      "user_id": "usr_2048",
+      "event_type": "api_call",
+      "source": "api",
+      "timestamp": "2026-03-27T03:00:04Z",
+      "request": {
+        "method": "POST",
+        "path": "/v1/reports/query",
+        "status": 200,
+        "duration_ms": 183
+      },
+      "device": {
+        "os": "Linux",
+        "browser": "curl",
+        "locale": "en-US"
+      },
+      "geo": {
+        "country": "DE",
+        "region": "BE",
+        "city": "Berlin"
+      },
+      "metrics": {
+        "cpu_ms": 98,
+        "db_rows": 1200,
+        "cache_hit": false
+      },
+      "tags": ["prod", "reports", "api"],
+      "error": {
+        "code": "RATE_LIMIT_NEAR",
+        "retryable": true
       }
     },
     {
-      "id": "usr_002",
-      "profile": {
-        "email": "grace@acme.example",
-        "display_name": "Grace Hopper",
-        "title": "Staff Data Engineer",
-        "team": "Data",
-        "locale": "en-US",
-        "timezone": "America/New_York"
+      "event_id": "evt_000004",
+      "session_id": "sess_c2",
+      "user_id": "usr_3099",
+      "event_type": "page_view",
+      "source": "web",
+      "timestamp": "2026-03-27T03:00:05Z",
+      "request": {
+        "method": "GET",
+        "path": "/billing/invoices",
+        "status": 200,
+        "duration_ms": 61
       },
-      "roles": ["editor", "viewer"],
-      "projects": [
-        {
-          "project_id": "prj_gamma",
-          "name": "Gamma",
-          "status": "active",
-          "environments": ["dev", "prod"],
-          "budgets": {
-            "monthly_limit": 12000,
-            "currency": "USD"
-          }
-        }
-      ],
-      "devices": [
-        {
-          "device_id": "dev_linux_01",
-          "type": "desktop",
-          "os": "Linux",
-          "last_seen_at": "2026-03-27T01:03:44Z",
-          "ip_addresses": ["192.0.2.44"]
-        }
-      ],
-      "activity": [
-        {
-          "event_id": "evt_9100",
-          "kind": "query_saved",
-          "status": "success",
-          "source": "web",
-          "context": {
-            "ip": "192.0.2.44",
-            "country": "US",
-            "mfa": true
-          }
-        }
-      ],
-      "security": {
-        "mfa_enabled": true,
-        "password_last_rotated_at": "2026-01-12T09:05:12Z",
-        "recovery_codes_remaining": 3
-      }
-    }
-  ],
-  "jobs": [
-    {
-      "job_id": "job_1001",
-      "kind": "warehouse_sync",
-      "state": "running",
-      "priority": 7,
-      "queue": "critical",
-      "attempts": [
-        {
-          "attempt": 1,
-          "started_at": "2026-03-27T03:10:00Z",
-          "worker": "sync-worker-01"
-        }
-      ]
+      "device": {
+        "os": "Windows",
+        "browser": "Edge",
+        "locale": "en-GB"
+      },
+      "geo": {
+        "country": "GB",
+        "region": "LND",
+        "city": "London"
+      },
+      "metrics": {
+        "cpu_ms": 21,
+        "db_rows": 72,
+        "cache_hit": true
+      },
+      "tags": ["prod", "billing", "page_view"]
     },
-    {
-      "job_id": "job_1002",
-      "kind": "invoice_generation",
-      "state": "failed",
-      "priority": 5,
-      "queue": "billing",
-      "attempts": [
-        {
-          "attempt": 1,
-          "started_at": "2026-03-27T02:00:00Z",
-          "finished_at": "2026-03-27T02:01:14Z",
-          "worker": "billing-worker-03",
-          "error": {
-            "code": "PDF_TIMEOUT",
-            "message": "Timed out waiting for renderer"
-          }
-        },
-        {
-          "attempt": 2,
-          "started_at": "2026-03-27T02:03:10Z",
-          "finished_at": "2026-03-27T02:04:11Z",
-          "worker": "billing-worker-04",
-          "error": {
-            "code": "PDF_TIMEOUT",
-            "message": "Timed out waiting for renderer"
-          }
-        }
-      ]
-    }
+    ... thousands more records with the same overall shape ...
   ],
-  "audit_log": [
-    {
-      "id": "log_0001",
-      "actor": "usr_001",
-      "action": "project.update",
-      "resource": "prj_alpha",
-      "changes": {
-        "before": {"status": "paused"},
-        "after": {"status": "active"}
-      }
-    },
-    {
-      "id": "log_0002",
-      "actor": "system",
-      "action": "job.retry",
-      "resource": "job_1002",
-      "changes": {
-        "before": {"attempt": 1},
-        "after": {"attempt": 2}
-      }
+  "aggregates": {
+    "event_count": 48762,
+    "unique_users": 913,
+    "time_range": {
+      "from": "2026-03-27T00:00:00Z",
+      "to": "2026-03-27T03:14:15Z"
     }
-  ],
-  "analytics": {
-    "dashboards": 18,
-    "saved_queries": 249,
-    "warehouse_bytes_scanned_30d": 9827349821,
-    "top_tables": ["events_raw", "billing_invoices", "user_sessions", "audit_log"]
   }
 }
 ```
@@ -324,144 +238,58 @@ Output after running `jshape`:
 {
   "export_id": "exp_2026_03_27_001",
   "generated_at": "2026-03-27T03:14:15Z",
-  "tenant": {
-    "id": "tenant_42",
-    "name": "Acme Global",
-    "plan": "enterprise",
-    "regions": [
-      "us-east-1", "eu-west-1", "ap-southeast-1"
-    ],
-    "feature_flags": [
-      "audit-trail", "advanced-billing", "fine-grained-rbac", "sso", "warehouse-sync"
-    ]
-  },
-  "users": [
+  "tenant_id": "tenant_42",
+  "events": [
     {
-      "id": "usr_001",
-      "profile": {
-        "email": "ada@acme.example",
-        "display_name": "Ada Lovelace",
-        "title": "Principal Engineer",
-        "team": "Platform",
-        "locale": "en-US",
-        "timezone": "America/Los_Angeles",
-        "phones"?: [
-          "+1-415-555-0101", "+1-415-555-0102"
-        ]
+      "event_id": "evt_000001",
+      "session_id": "sess_a1",
+      "user_id": "usr_1001",
+      "event_type": "page_view", "api_call",
+      "source": "web", "api",
+      "timestamp": "2026-03-27T03:00:01Z",
+      "request": {
+        "method": "GET", "POST",
+        "path": "/dashboard", "/dashboard/usage", "/v1/reports/query", "/billing/invoices",
+        "status": 200,
+        "duration_ms": 42, 57, 183, 61
       },
-      "roles": [
-        "admin", "billing", "support", "editor", "viewer"
-      ],
-      "projects": [
-        {
-          "project_id": "prj_alpha",
-          "name": "Alpha",
-          "status": "active", "paused",
-          "environments": [
-            "dev", "staging", "prod"
-          ],
-          "budgets": {
-            "monthly_limit": 20000, 5000, 12000,
-            "currency": "USD"
-          }
-        },
-      ...  // 2 items
-      ],
-      "devices": [
-        {
-          "device_id": "dev_mac_01",
-          "type": "laptop",
-          "os": "macOS",
-          "last_seen_at": "2026-03-27T02:58:10Z",
-          "ip_addresses": [
-            "203.0.113.10", "203.0.113.11", "198.51.100.7", "192.0.2.44"
-          ]
-        },
-      ...  // 2 items
-      ],
-      "activity": [
-        {
-          "event_id": "evt_9001",
-          "kind": "login",
-          "status": "success",
-          "source": "web",
-          "context": {
-            "ip": "203.0.113.10",
-            "country": "US",
-            "mfa": true
-          }
-        },
-      ...  // 2 items
-      ],
-      "billing"?: {
-        "cost_center": "ENG-PLATFORM",
-        "invoice_email": "ops@acme.example",
-        "active_subscriptions": [
-          "analytics", "support-plus", "warehouse-sync"
-        ]
+      "device": {
+        "os": "macOS", "Linux", "Windows",
+        "browser": "Chrome", "curl", "Edge",
+        "locale": "en-US", "en-GB"
       },
-      "security": {
-        "mfa_enabled": true,
-        "password_last_rotated_at": "2026-02-18T11:20:00Z",
-        "recovery_codes_remaining": 8, 3
+      "geo": {
+        "country": "US", "DE", "GB",
+        "region": "CA", "BE", "LND",
+        "city": "San Francisco", "Berlin", "London"
+      },
+      "metrics": {
+        "cpu_ms": 12, 19, 98, 21,
+        "db_rows": 18, 44, 1200, 72,
+        "cache_hit": bool
+      },
+      "tags": [
+        "prod", "dashboard", "page_view", "reports", "api", "billing"
+      ],
+      "error"?: {
+        "code": "RATE_LIMIT_NEAR",
+        "retryable": true
       }
     },
-  ...  // 2 items
+  ...  // 48762 items
   ],
-  "jobs": [
-    {
-      "job_id": "job_1001",
-      "kind": "warehouse_sync",
-      "state": "running",
-      "priority": 7, 5,
-      "queue": "critical", "billing",
-      "attempts": [
-        {
-          "attempt": 1, 2,
-          "started_at": "2026-03-27T03:10:00Z",
-          "finished_at"?: "2026-03-27T02:01:14Z",
-          "worker": "sync-worker-01", "billing-worker-03", "billing-worker-04",
-          "error"?: {
-            "code": "PDF_TIMEOUT",
-            "message": "Timed out waiting for renderer"
-          }
-        },
-      ...  // 2 items
-      ]
-    },
-  ...  // 2 items
-  ],
-  "audit_log": [
-    {
-      "id": "log_0001",
-      "actor": "usr_001", "system",
-      "action": "project.update", "job.retry",
-      "resource": "prj_alpha", "job_1002",
-      "changes": {
-        "before": {
-          "status"?: "paused",
-          "attempt"?: 1
-        },
-        "after": {
-          "status"?: "active",
-          "attempt"?: 2
-        }
-      }
-    },
-  ...  // 2 items
-  ],
-  "analytics": {
-    "dashboards": 18,
-    "saved_queries": 249,
-    "warehouse_bytes_scanned_30d": 9827349821,
-    "top_tables": [
-      "events_raw", "billing_invoices", "user_sessions", "audit_log"
-    ]
+  "aggregates": {
+    "event_count": 48762,
+    "unique_users": 913,
+    "time_range": {
+      "from": "2026-03-27T00:00:00Z",
+      "to": "2026-03-27T03:14:15Z"
+    }
   }
 }
 ```
 
-That is the core use case: take a huge payload that is exhausting to read directly, then collapse it into a compact structural outline that still preserves enough concrete examples to understand the data.
+The difference is the point of the tool: the raw input repeats the same object shape thousands of times, while the output keeps one representative structure, marks optional fields, preserves a few concrete values, and tells you how large the array really is.
 
 ## Notes
 
