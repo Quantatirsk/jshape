@@ -1,3 +1,9 @@
 /target
 /tests
 .DS_Store
+/bindings/python/dist/
+/bindings/python/target/
+/bindings/python/.venv/
+/bindings/python/.maturin/
+/bindings/node/pkg/
+/bindings/node/target/

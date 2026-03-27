@@ -1,0 +1,46 @@
+name: Publish Node Package
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install wasm-pack
+        run: cargo install wasm-pack --version 0.14.0 --locked
+
+      - name: Build Node package
+        run: wasm-pack build bindings/node --target nodejs --release --scope quanthub --out-dir pkg --out-name jshape
+
+      - name: Normalize package metadata
+        run: python3 scripts/prepare_node_pkg.py bindings/node/pkg/package.json
+
+      - name: Smoke test generated package
+        run: |
+          node -e "const mod = require('./bindings/node/pkg'); const out = mod.analyzeJson('{\"user\":{\"name\":\"Ada\"}}', true); if (!out.includes('\"user\"')) throw new Error('missing user field');"
+
+      - name: Publish to npm
+        working-directory: bindings/node/pkg
+        run: npm publish --access public --provenance

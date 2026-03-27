@@ -15,28 +15,43 @@ It is designed for large or messy JSON payloads where you want to understand the
 
 ## Install
 
-As a library:
+As a Rust library:
 
 ```toml
 [dependencies]
 jshape = "0.1.0"
 ```
 
-As a CLI:
+As a Rust CLI:
 
 ```bash
 cargo install jshape
 ```
 
+As a Python package:
+
+```bash
+pip install jshape
+```
+
+As a Node.js package:
+
+```bash
+npm install @quanthub/jshape
+```
+
 ## Publish
 
-This repository ships with a GitHub Actions workflow for crates.io publishing.
+This repository ships with separate GitHub Actions workflows for Rust, Python, and Node.js publishing.
 
-1. Add a repository secret named `CARGO_REGISTRY_TOKEN`
-2. Open the `Publish Crate` workflow in GitHub Actions
-3. Click `Run workflow`
+- Rust / crates.io:
+  Add a repository secret named `CARGO_REGISTRY_TOKEN`, then run `Publish Rust Crate`.
+- Python / PyPI:
+  Configure PyPI trusted publishing for repository `Quantatirsk/jshape` and workflow file `.github/workflows/publish-python.yml`, then run `Publish Python Package`.
+- Node.js / npm:
+  Configure npm trusted publishing for package `@quanthub/jshape`, repository `Quantatirsk/jshape`, and workflow file `.github/workflows/publish-node.yml`, then run `Publish Node Package`.
 
-The same workflow also publishes automatically when you push a version tag such as `v0.1.0`.
+All three workflows also publish automatically when you push a version tag such as `v0.1.0`.
 
 ## CLI Usage
 
@@ -58,7 +73,7 @@ Show types instead of example values:
 jshape --no-examples payload.json
 ```
 
-## Library Usage
+## Rust Usage
 
 ```rust
 use jshape::analyze_json;
@@ -82,6 +97,34 @@ If you need lower-level access, the crate also exposes:
 - `extract_schema`
 - `format_schema`
 - `Schema`
+
+## Python Usage
+
+```python
+import jshape
+
+outline = jshape.analyze_json(
+    '{"user":{"name":"Ada"},"events":[{"id":1},{"id":2,"amount":19.9}]}',
+    True,
+)
+
+print(outline)
+```
+
+## Node.js Usage
+
+```js
+const { analyzeJson } = require("@quanthub/jshape");
+
+const outline = analyzeJson(
+  '{"user":{"name":"Ada"},"events":[{"id":1},{"id":2,"amount":19.9}]}',
+  true,
+);
+
+console.log(outline);
+```
+
+The Node.js package is built from the same Rust core, but distributed as a WebAssembly package so it installs cleanly through npm.
 
 ## Example
 

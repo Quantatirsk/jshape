@@ -1,0 +1,19 @@
+[package]
+name = "jshape-python"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+description = "Python bindings for jshape"
+readme = "README.md"
+homepage = "https://github.com/Quantatirsk/jshape"
+repository = "https://github.com/Quantatirsk/jshape"
+keywords = ["json", "schema", "shape", "python", "repair"]
+
+[lib]
+name = "jshape"
+crate-type = ["cdylib"]
+
+[dependencies]
+jshape = { path = "../.." }
+pyo3 = { version = "0.28.2", features = ["extension-module", "abi3-py38"] }
