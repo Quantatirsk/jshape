@@ -1,0 +1,26 @@
+[package]
+name = "jshape"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Repair malformed JSON and render a stable, human-readable structural outline."
+readme = "README.md"
+homepage = "https://github.com/Quantatirsk/jshape"
+repository = "https://github.com/Quantatirsk/jshape"
+documentation = "https://docs.rs/jshape"
+keywords = ["json", "schema", "shape", "cli", "repair"]
+categories = ["command-line-utilities", "parser-implementations"]
+include = ["src/**/*", "Cargo.toml", "Cargo.lock", "README.md", "LICENSE"]
+
+[lib]
+name = "jshape"
+path = "src/lib.rs"
+
+[[bin]]
+name = "jshape"
+path = "src/main.rs"
+
+[dependencies]
+indexmap = "2.12.0"
+json-repair = "0.4.0"
+serde_json = { version = "1.0", features = ["preserve_order"] }
